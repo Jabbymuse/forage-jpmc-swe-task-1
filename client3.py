@@ -20,6 +20,7 @@
 
 import json
 import random
+import unittest
 import urllib.request
 
 # Server API URLs
@@ -35,25 +36,44 @@ def getDataPoint(quote):
     stock = quote['stock']
     bid_price = float(quote['top_bid']['price'])
     ask_price = float(quote['top_ask']['price'])
-    price = bid_price
+    price = (bid_price + ask_price) / 2
     return stock, bid_price, ask_price, price
 
 
 def getRatio(price_a, price_b):
     """ Get ratio of price_a and price_b """
     """ ------------- Update this function ------------- """
-    return 1
+    if price_b == 0:
+        return
+    return price_a/price_b
 
+# Please uncomment and run to see unit tests
+"""class Test_quote(unittest.TestCase):
+    def test_getDataPoint(self):
+        quotes_test = [{'id': '0.4206574395534999', 'stock': 'DEF', 'timestamp': '2019-09-10 10:26:04.827613',
+                        'top_bid': {'price': 146.63, 'size': 40}, 'top_ask': {'price': 149.04, 'size': 33}},
+                       {'id': '0.4206574395534999', 'stock': 'DEF', 'timestamp': '2019-09-10 10:26:04.827613',
+                        'top_bid': {'price': 0, 'size': 40}, 'top_ask': {'price': 0, 'size': 33}}]
+        for quote in quotes_test:
+            #print(getDataPoint(quote))
+            self.assertEqual(getDataPoint(quote), (quote['stock'], quote['top_bid']['price'], quote['top_ask']['price'], (quote['top_bid']['price'] + quote['top_ask']['price'])/2))
+    def test_getRatio(self):
+        price_test = [(1,1),(3,4),(2,0)]
+        for prices in price_test:
+            #print(getRatio(prices[0],prices[1]))
+            self.assertEqual(getRatio(prices[0],prices[1]), None if prices[1] == 0 else (prices[0]/prices[1]))"""
 
 # Main
 if __name__ == "__main__":
     # Query the price once every N seconds.
     for _ in iter(range(N)):
         quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
-
         """ ----------- Update to get the ratio --------------- """
+        prices = {}
         for quote in quotes:
+            print(quote)
             stock, bid_price, ask_price, price = getDataPoint(quote)
+            prices[stock] = price
             print("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
 
-        print("Ratio %s" % getRatio(price, price))
+        print("Ratio %s" % getRatio(prices["ABC"], prices["DEF"]))
